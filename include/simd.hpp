@@ -43,7 +43,7 @@ struct ScalarReg {
 };
 
 
-// Реализация на векторных расширениях GCC/Clang (__attribute__((vector_size)))
+// реализация на векторных расширениях GCC/Clang (__attribute__((vector_size)))
 template <class T>
 struct Pack {
     static_assert(is_supported_v<T>, "supported types: int32_t, float, double");

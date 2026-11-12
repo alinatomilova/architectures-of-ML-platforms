@@ -32,8 +32,8 @@ R exp(R x) {
     if constexpr (std::is_same_v<T, float>) {
         x = vmin(vmax(x, c(-87.0)), c(88.0));
         // n = round(x * log2(e))
-        R magic = c(12582912.0);
-        R n = (x * c(1.44269504088896341) + magic) - magic;
+        R l = c(12582912.0);
+        R n = (x * c(1.44269504088896341) + l) - l;
         // r = x - n ln2
         R r = (x - n * c(0.693359375)) - n * c(-2.12194440e-4);
         // exp(r) ~ 1 + r + r^2 * P(r)
@@ -47,8 +47,8 @@ R exp(R x) {
         return y.scale_pow2(n);
     } else {
         x = vmin(vmax(x, c(-700.0)), c(700.0));
-        R magic = c(6755399441055744.0);  // 1.5 * 2^52
-        R n = (x * c(1.4426950408889634074) + magic) - magic;
+        R l = c(6755399441055744.0);  // 1.5 * 2^52
+        R n = (x * c(1.4426950408889634074) + l) - l;
         R r = (x - n * c(6.93147180369123816490e-01)) - n * c(1.90821492927058770002e-10);
         // Ряд Тейлора до r^13 (|r| <= 0.3466: остаток < 1e-17), схема Горнера
         R p = c(1.0 / 6227020800.0);  // 1/13!
@@ -69,7 +69,7 @@ R exp(R x) {
     }
 }
  
-// x / (1 + exp(-s)): общая часть SiLU (s = x) и GELU (s = 2 sqrt(2/pi) (x + 0.044715 x^3)).
+// x / (1 + exp(-s)): общая часть SiLU (s = x) и GELU (s = 2 sqrt(2/pi) (x + 0.044715 x^3))
 template <class R>
 R x_over_one_plus_exp_neg(R x, R s) {
     using T = typename R::value_type;
