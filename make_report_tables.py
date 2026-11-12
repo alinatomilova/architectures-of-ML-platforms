@@ -20,8 +20,8 @@ def cell(op, t, s, th):
 
 
 for th in threads:
-    print(f"#### Количество потоков: {th}\n")
-    print("Поэлементные операции и reduction, GB/s: Scalar --> SIMD (ускорение)\n")
+    print(f"# Количество потоков: {th}\n")
+    print("### Поэлементные операции и reduction, GB/s: Scalar --> SIMD (ускорение)\n")
     for t in types:
         sizes = sorted({k[2] for k in d if k[0] == "add" and k[1] == t})
         print(f"**{t}**\n")
@@ -30,7 +30,7 @@ for th in threads:
         for op in elem_ops:
             print(f"| {op} | " + " | ".join(cell(op, t, s, th) for s in sizes) + " |")
         print()
-    print("Матричное умножение N x N, GFLOP/s: Scalar --> SIMD (ускорение)\n")
+    print("### Матричное умножение N x N, GFLOP/s: Scalar --> SIMD (ускорение)\n")
     sizes = sorted({k[2] for k in d if k[0] == "matmul"})
     print("| тип | " + " | ".join(f"N={s}" for s in sizes) + " |")
     print("|---|" + "---|" * len(sizes))
