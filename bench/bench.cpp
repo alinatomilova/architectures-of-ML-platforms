@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "include/ops.hpp"
+#include "../include/ops.hpp"
 
 using Clock = std::chrono::steady_clock;
 
