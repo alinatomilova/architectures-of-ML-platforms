@@ -1,0 +1,22 @@
+# build artifacts
+/build/
+/build-*/
+/cmake-build-*/
+
+# benchmark / report outputs
+/bench.log
+
+# python
+__pycache__/
+*.pyc
+
+# editors / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# misc
+*.o
+*.obj
+*.exe
