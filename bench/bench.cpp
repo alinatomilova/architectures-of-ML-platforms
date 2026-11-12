@@ -45,7 +45,7 @@ double time_ms(const std::function<void()>& fn) {
     return t[t.size() / 2];
 }
 
-// сравнение значений, посчитанных из данных типа T
+
 template <class T, class V>
 bool close_as(V a, V b) {
     if constexpr (std::is_integral_v<T>) return double(a) == double(b);
