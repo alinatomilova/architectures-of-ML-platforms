@@ -16,6 +16,16 @@
 
 ### Запуск тестов
 
+- Клонирование репозитория
+
+```bash
+git clone git@github.com:alinatomilova/architectures-of-ML-platforms.git
+cd architectures-of-ML-platforms
+git checkout hw1
+```
+
+- Воспроизведение
+
 ```bash
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build -j
 ctest --test-dir build --output-on-failure        # тесты на корректность (./build/hw_tests)
