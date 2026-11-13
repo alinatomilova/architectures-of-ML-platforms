@@ -10,6 +10,7 @@
 
 namespace hw {
 
+// callables
 struct Add {
     template <class X> X operator()(const X& a, const X& b) const { return a + b; }
 };
@@ -23,10 +24,10 @@ struct Div {
     template <class X> X operator()(const X& a, const X& b) const { return a / b; }
 };
 
-// min размер куска работы на поток (в элементах)
 inline constexpr std::size_t kElemGrain = std::size_t{1} << 16;
 
 
+// поэлементные операции
 namespace detail {
 
 template <class B, class T, class Op>
@@ -35,7 +36,7 @@ void binary_range(const T* a, const T* b, T* out, std::size_t n, Op op) {
     constexpr std::size_t W = R::width;
     std::size_t i = 0;
     for (; i + W <= n; i += W) op(R::load(a + i), R::load(b + i)).store(out + i);
-    for (; i < n; ++i) out[i] = op(a[i], b[i]);
+    for (; i < n; ++i) out[i] = op(a[i], b[i]);  // хвост
 }
 
 template <class B, class T, class Op>
@@ -59,7 +60,7 @@ T reduce_range(const T* a, std::size_t n, T identity, Op op) {
 
 }  // namespace detail
 
-
+// out[i] = op(a[i], b[i])
 template <class B, class T, class Op>
 void transform(const T* a, const T* b, T* out, std::size_t n, Op op, std::size_t threads = 0) {
     parallel_for(0, n, kElemGrain, threads, [&](std::size_t s, std::size_t e) {
@@ -79,13 +80,13 @@ template <class B, class T>
 void mul(const T* a, const T* b, T* out, std::size_t n, std::size_t threads = 0) {
     transform<B>(a, b, out, n, Mul{}, threads);
 }
-
 template <class B, class T>
 void div(const T* a, const T* b, T* out, std::size_t n, std::size_t threads = 0) {
     transform<B>(a, b, out, n, Div{}, threads);
 }
 
 
+// reduction
 template <class B, class T, class Op>
 T reduce(const T* a, std::size_t n, T identity, Op op, std::size_t threads = 0) {
     return parallel_reduce<T>(
@@ -93,6 +94,7 @@ T reduce(const T* a, std::size_t n, T identity, Op op, std::size_t threads = 0) 
         [&](std::size_t s, std::size_t e) { return detail::reduce_range<B>(a + s, e - s, identity, op); }, op);
 }
 
+// для int32 переполнение происходит по модулю 2^32 (нужен -fwrapv)
 template <class B, class T>
 T sum(const T* a, std::size_t n, std::size_t threads = 0) {
     return reduce<B>(a, n, T{0}, Add{}, threads);
@@ -104,12 +106,14 @@ double mean(const T* a, std::size_t n, std::size_t threads = 0) {
 }
 
 
+// matmul
 namespace detail {
 
 inline constexpr std::size_t kMR = 4;    // строк C в микроядре
 inline constexpr std::size_t kKC = 128;  // блок по K
 inline constexpr std::size_t kNC = 256;  // блок по N
 
+// аккумуляторы C живут в регистрах на протяжении цикла по k
 template <class B, class T, std::size_t MR>
 inline void micro_kernel(const T* A, const T* Bm, T* C, std::size_t K, std::size_t N, std::size_t i,
                          std::size_t k0, std::size_t k1, std::size_t j0, std::size_t j1) {
@@ -125,7 +129,7 @@ inline void micro_kernel(const T* A, const T* Bm, T* C, std::size_t K, std::size
         }
         for (std::size_t r = 0; r < MR; ++r) c[r].store(C + (i + r) * N + j);
     }
-    for (; j < j1; ++j) {
+    for (; j < j1; ++j) {  // хвост по столбцам
         for (std::size_t r = 0; r < MR; ++r) {
             T s = C[(i + r) * N + j];
             for (std::size_t k = k0; k < k1; ++k) s += A[(i + r) * K + k] * Bm[k * N + j];
@@ -151,7 +155,7 @@ void matmul_rows(const T* A, const T* Bm, T* C, std::size_t i0, std::size_t i1, 
 
 }  // namespace detail
 
-//  A_(M x K) * B_(K x N) = C_(M x N)
+// блокирование по K и N + микроядро 4 x W, параллелизация по строкам C
 template <class B, class T>
 void matmul(const T* A, const T* Bm, T* C, std::size_t M, std::size_t K, std::size_t N,
             std::size_t threads = 0) {
