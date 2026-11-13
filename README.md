@@ -13,3 +13,12 @@
 Типы данных: int32, float32, float64.
 
 **Отчет: `REPORT.md`**
+
+### Запуск тестов
+
+```bash
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build -j
+ctest --test-dir build --output-on-failure        # тесты на корректность (./build/hw_tests)
+./build/hw_bench > results.csv 2> bench.log       # нагрузочные тесты
+python3 make_report_tables.py results.csv --inject REPORT.md   # пересобрать таблицы
+```

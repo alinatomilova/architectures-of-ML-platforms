@@ -1,8 +1,8 @@
 // Нагрузочные тесты (замер производительности)
 // op: add, sub, mul, div, sum, mean, silu, gelu, matmul
 // type: int32, float32, float64
-// backend: scalar, simd; 
-// threads: 1, 2, 4, ... max_threads.
+// backend: scalar, simd
+// threads: 1, 2, 4, ... max_threads
 // metric: GB/s (поэлементные операции/reduce), Gelem/s (SiLU/GELU), GFLOP/s (matmul)
 #include <algorithm>
 #include <chrono>
